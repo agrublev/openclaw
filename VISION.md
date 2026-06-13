@@ -1,6 +1,6 @@
 ## OpenClaw Vision
 
-OpenClaw should stay small.
+OpenClaw should stay small so it remains easy to embed, understand, and extend.
 
 The core product is only:
 
@@ -61,3 +61,4 @@ If a capability can live outside the core loop, it should.
 
 OpenClaw is orchestration code: prompts, tools, sessions, and runtime
 boundaries. TypeScript keeps that surface easy to inspect, change, and extend.
+Its static types also keep agent, session, skill, and tool interfaces explicit.

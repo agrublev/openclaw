@@ -6,7 +6,7 @@ read_when:
 title: "Minimal system"
 ---
 
-OpenClaw can be used as a very small agent runtime.
+OpenClaw provides a minimal agent runtime for building agents with skills, tools, sessions, and heartbeat.
 
 The minimal product shape is:
 

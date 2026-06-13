@@ -53,6 +53,33 @@ export interface MinimalAgentOptions<TTool extends AgentTool = AgentTool> {
 
 type MinimalHarness<TTool extends AgentTool> = CoreAgentHarness<Skill, never, TTool>;
 
+function normalizeOptionalId(value: string | undefined, fieldName: string): string | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  const trimmed = value.trim();
+  if (!trimmed) {
+    throw new Error(`The ${fieldName} must not be empty`);
+  }
+  return trimmed;
+}
+
+function normalizeOptionalName(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : undefined;
+}
+
+function resolveConfiguredHeartbeatPrompt(prompt: string | undefined): string {
+  if (prompt === undefined) {
+    return DEFAULT_MINIMAL_HEARTBEAT_PROMPT;
+  }
+  const trimmed = prompt.trim();
+  if (!trimmed) {
+    throw new Error("heartbeatPrompt must not be empty");
+  }
+  return trimmed;
+}
+
 export class MinimalAgentSession<TTool extends AgentTool = AgentTool> {
   readonly id: string;
   private readonly metadata: MinimalSessionMetadata;
@@ -129,7 +156,7 @@ export class MinimalAgent<TTool extends AgentTool = AgentTool> {
   private readonly skills = new Map<string, Skill>();
 
   constructor(options: MinimalAgentOptions<TTool>) {
-    this.id = options.id?.trim() || randomUUID();
+    this.id = normalizeOptionalId(options.id, "agent id") ?? randomUUID();
     this.env =
       options.env ??
       new NodeExecutionEnv({
@@ -147,13 +174,15 @@ export class MinimalAgent<TTool extends AgentTool = AgentTool> {
         ? {
             streamSimple: options.streamFn,
             completeSimple: async () => {
-              throw new Error("completeSimple is not configured for this MinimalAgent");
+              throw new Error(
+                "completeSimple is not configured. Provide options.runtime or ensure your streamFn covers all required runtime operations.",
+              );
             },
           }
         : openClawAgentCoreRuntime);
     this.streamOptions = options.streamOptions;
     this.thinkingLevel = options.thinkingLevel ?? "off";
-    this.heartbeatPrompt = options.heartbeatPrompt?.trim() || DEFAULT_MINIMAL_HEARTBEAT_PROMPT;
+    this.heartbeatPrompt = resolveConfiguredHeartbeatPrompt(options.heartbeatPrompt);
 
     for (const skill of options.skills ?? []) {
       this.skills.set(skill.name, skill);
@@ -181,17 +210,16 @@ export class MinimalAgent<TTool extends AgentTool = AgentTool> {
   }
 
   setHeartbeatPrompt(prompt: string): void {
-    const trimmed = prompt.trim();
-    this.heartbeatPrompt = trimmed || DEFAULT_MINIMAL_HEARTBEAT_PROMPT;
+    this.heartbeatPrompt = resolveConfiguredHeartbeatPrompt(prompt);
   }
 
   async createSession(
     options: MinimalSessionCreateOptions = {},
   ): Promise<MinimalAgentSession<TTool>> {
     const metadata: MinimalSessionMetadata = {
-      id: options.id?.trim() || randomUUID(),
+      id: normalizeOptionalId(options.id, "session id") ?? randomUUID(),
       createdAt: new Date().toISOString(),
-      name: options.name?.trim() || undefined,
+      name: normalizeOptionalName(options.name),
     };
     const session = new Session(
       new InMemorySessionStorage<MinimalSessionMetadata>({
@@ -264,7 +292,9 @@ export class MinimalAgent<TTool extends AgentTool = AgentTool> {
   private requireSession(id: string): MinimalAgentSession<TTool> {
     const session = this.sessions.get(id);
     if (!session) {
-      throw new Error(`Unknown session: ${id}`);
+      throw new Error(
+        `Session not found: ${id}. Create one with agent.createSession() or list existing sessions with agent.listSessions().`,
+      );
     }
     return session;
   }

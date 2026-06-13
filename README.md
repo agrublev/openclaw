@@ -17,7 +17,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="MIT License"></a>
 </p>
 
-OpenClaw is the smallest useful system in this repo for building agents that can do work.
+OpenClaw is a minimal agent runtime for building agents that can do work.
 
 The core loop is:
 

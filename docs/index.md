@@ -22,7 +22,7 @@ title: "OpenClaw"
     />
 </p>
 
-OpenClaw is the smallest useful agent runtime in this repository.
+OpenClaw is a minimal agent runtime for building agents that can do work.
 
 It is built around six things:
 

@@ -11,7 +11,7 @@ sidebarTitle: "Heartbeat"
 **Heartbeat vs cron?** See [Automation](/automation) for guidance on when to use each.
 </Note>
 
-Heartbeat runs **periodic agent turns** in a session so the agent can follow up on work without adding a larger scheduler.
+Heartbeat runs **periodic agent turns** in a session so the agent can follow up on tasks without adding a larger scheduler.
 
 Heartbeat is a scheduled main-session turn — it does **not** create [background task](/automation/tasks) records. Task records are for detached work (ACP runs, subagents, isolated cron jobs).
 
