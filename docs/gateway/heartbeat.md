@@ -11,30 +11,26 @@ sidebarTitle: "Heartbeat"
 **Heartbeat vs cron?** See [Automation](/automation) for guidance on when to use each.
 </Note>
 
-Heartbeat runs **periodic agent turns** in the main session so the model can surface anything that needs attention without spamming you.
+Heartbeat runs **periodic agent turns** in a session so the agent can follow up on work without adding a larger scheduler.
 
 Heartbeat is a scheduled main-session turn — it does **not** create [background task](/automation/tasks) records. Task records are for detached work (ACP runs, subagents, isolated cron jobs).
 
 Troubleshooting: [Scheduled Tasks](/automation/cron-jobs#troubleshooting)
 
-## Quick start (beginner)
+## Quick start
 
 <Steps>
   <Step title="Pick a cadence">
-    Leave heartbeats enabled (default is `30m`, or `1h` for Anthropic OAuth/token auth, including Claude CLI reuse) or set your own cadence.
+    Leave heartbeats enabled (default is `30m`) or set your own cadence.
   </Step>
   <Step title="Add HEARTBEAT.md (optional)">
-    Create a tiny `HEARTBEAT.md` checklist or `tasks:` block in the agent workspace.
+    Create a tiny `HEARTBEAT.md` checklist in the agent workspace.
   </Step>
-  <Step title="Decide where heartbeat messages should go">
-    `target: "none"` is the default; set `target: "last"` to route to the last contact.
+  <Step title="Run the turn">
+    Call `session.heartbeat()` from the minimal runtime, or configure `agents.defaults.heartbeat` when you are using the full Gateway.
   </Step>
-  <Step title="Optional tuning">
-    - Enable heartbeat reasoning delivery for transparency.
-    - Use lightweight bootstrap context if heartbeat runs only need `HEARTBEAT.md`.
-    - Enable isolated sessions to avoid sending full conversation history each heartbeat.
-    - Restrict heartbeats to active hours (local time).
-
+  <Step title="Keep the prompt small">
+    Use heartbeat for lightweight periodic checks, not large workflows.
   </Step>
 </Steps>
 
@@ -46,13 +42,7 @@ Example config:
     defaults: {
       heartbeat: {
         every: "30m",
-        target: "last", // explicit delivery to last contact (default is "none")
-        directPolicy: "allow", // default: allow direct/DM targets; set "block" to suppress
-        lightContext: true, // optional: only inject HEARTBEAT.md from bootstrap files
-        isolatedSession: true, // optional: fresh session each run (no conversation history)
-        skipWhenBusy: true, // optional: also defer when this agent's subagent or nested lanes are busy
-        // activeHours: { start: "08:00", end: "24:00" },
-        // includeReasoning: true, // optional: send separate `Thinking` message too
+        prompt: "Read HEARTBEAT.md if it exists in the workspace. Follow it strictly. If nothing needs attention, reply HEARTBEAT_OK.",
       },
     },
   },
@@ -61,7 +51,7 @@ Example config:
 
 ## Defaults
 
-- Interval: `30m` (or `1h` when Anthropic OAuth/token auth is the detected auth mode, including Claude CLI reuse). Set `agents.defaults.heartbeat.every` or per-agent `agents.list[].heartbeat.every`; use `0m` to disable.
+- Interval: `30m`. Set `agents.defaults.heartbeat.every` or per-agent `agents.list[].heartbeat.every`; use `0m` to disable.
 - Prompt body (configurable via `agents.defaults.heartbeat.prompt`): `Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.`
 - Timeout: unset heartbeat turns use `agents.defaults.timeoutSeconds` when set. Otherwise, they use the heartbeat cadence capped at 600 seconds. Set `agents.defaults.heartbeat.timeoutSeconds` or per-agent `agents.list[].heartbeat.timeoutSeconds` for longer heartbeat work.
 - The heartbeat prompt is sent **verbatim** as the user message. The system prompt includes a "Heartbeat" section only when heartbeats are enabled for the default agent, and the run is flagged internally.

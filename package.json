@@ -1,7 +1,7 @@
 {
   "name": "openclaw",
   "version": "2026.6.2",
-  "description": "Multi-channel AI gateway with extensible messaging integrations",
+  "description": "Minimal agent runtime for agents, skills, tasks, sessions, tools, and heartbeat",
   "keywords": [],
   "homepage": "https://github.com/openclaw/openclaw#readme",
   "bugs": {
@@ -150,6 +150,10 @@
   "main": "dist/index.js",
   "exports": {
     ".": "./dist/index.js",
+    "./minimal": {
+      "types": "./dist/minimal-system.d.ts",
+      "default": "./dist/minimal-system.js"
+    },
     "./plugin-sdk": {
       "types": "./dist/plugin-sdk/index.d.ts",
       "default": "./dist/plugin-sdk/index.js"
